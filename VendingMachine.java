@@ -17,6 +17,8 @@ public class VendingMachine implements VendingMachineInteface{
 		initialize();
 	}
 	
+	
+	
 	private void initialize(){
 		//creating machine inventory with 10 of each product and 10 of each coin type
 		for(Coin c : Coin.values()){
@@ -28,13 +30,31 @@ public class VendingMachine implements VendingMachineInteface{
 		}
 		
 	}
+	
+	public VendingMachine(int coinsNumber, int itemsNumber){
+		initializeCustom(coinsNumber,itemsNumber);
+	}
+	
+	private void initializeCustom(int coinsNumber, int itemsNumber){
+		for(Coin c : Coin.values()){
+			coinInventory.putItems(c,coinsNumber);
+		}
+		
+		for(Item i : Item.values()){
+			itemInventory.putItems(i,itemsNumber);
+		}
+	}
 
 	@Override
 	public List<Coin> refund() {
-		List<Coin >refund = getChange(currentBalance);
+		List<Coin>refund = getChange(currentBalance);
 		currentBalance=0;
 		selectedItem=null;
 		updateCoinInventory(refund);
+		for(Coin c : refund){
+			System.out.println("Refunding: " + c.name());
+		}
+		
 		return refund;
 	}
 
@@ -56,12 +76,24 @@ public class VendingMachine implements VendingMachineInteface{
 
 	@Override
 	public Container<Item, List<Coin>> returnOrderAndChange() {
-		List<Coin> change = collectChange();
+		
 		Item item = collectItem();
+		List<Coin> change = collectChange();
+		
+		
+		System.out.println(""+ item.getName() + " bought");
+		for(Coin c : change){
+			System.out.println("Change: " + c.name());
+		}
+		
+		
+		
+		totalSales+=selectedItem.getPrice();
 		currentBalance=0;
 		selectedItem=null;
 		
-		totalSales+=selectedItem.getPrice();
+		
+		
 		return new Container(change,item);
 	}
 
@@ -76,6 +108,7 @@ public class VendingMachine implements VendingMachineInteface{
 	
 	public boolean isFullyPaid(){
 		if(currentBalance>=selectedItem.getPrice()) return true;
+		
 		return false;
 	}
 	
@@ -107,11 +140,12 @@ public class VendingMachine implements VendingMachineInteface{
 		return hasChange;
 	}
 	public List<Coin> getChange(long amount) throws NotEnoughChangeException{
-		
+		int c=0;
 		 //List<Coin> changes = Collections.emptyList();
 		List<Coin> changes = new ArrayList<Coin>();
 		 
 		 for(int i=0;i<coinInventory.getSize();i++){
+			 c++;
 			 if(amount==0) return changes;
 
 			 else if(amount%500==0 && coinInventory.countItems(Coin.PIEC)>0){
@@ -164,22 +198,26 @@ public class VendingMachine implements VendingMachineInteface{
 		long changeValue = currentBalance-selectedItem.getPrice();
 		List<Coin> change = getChange(changeValue);
 		updateCoinInventory(change);
-		currentBalance=0;
-		selectedItem=null;
 		return change;
 	}
 	public Item collectItem() throws NotPaidFullException,NotEnoughChangeException{
 		if(isFullyPaid()){
 			if(hasSufficientChange()){
 			itemInventory.withdrawItem(selectedItem);
+			
 			return selectedItem;
 			} 
-			throw new NotEnoughChangeException("Not enough change in machine");
+			else throw new NotEnoughChangeException("Not enough change in machine");
 		}
-		long whatToPay = selectedItem.getPrice()-currentBalance;
-		throw new NotPaidFullException("Price not fully paid - remaining: ", whatToPay);
+		else{
+			long whatToPay = selectedItem.getPrice()-currentBalance;
+			throw new NotPaidFullException("Price not fully paid", whatToPay);
+		}
 	}
 	
+	public long getCurrentBalance(){
+		return currentBalance;
+	}
 	}
 
 

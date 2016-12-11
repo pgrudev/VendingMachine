@@ -17,7 +17,10 @@ public class Inventory<T> {
 	}
 	
 	public boolean isThere(T item){
-		return inventory.containsKey(item);
+		int countInInventory=inventory.get(item);
+		if(countInInventory>0) return true;
+		else return false;
+		//return inventory.containsKey(item);
 	}
 	
 	public void withdrawItem(T item){
@@ -38,7 +41,8 @@ public class Inventory<T> {
 		for (HashMap.Entry<T, Integer> entry : inventory.entrySet()) {
 		    T key = entry.getKey();
 		    Integer value = entry.getValue();
-		    System.out.println(key.toString() + ": quantity " + value);
+		    if (value!=null) System.out.println(key.toString() + ": quantity " + value);
+		    else System.out.println(key.toString() + ": quantity 0");
 		}
 	}
 	public int getSize(){
